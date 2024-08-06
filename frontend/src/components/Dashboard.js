@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '.././api/axiosInstance'; // Assuming you have axiosInstance set up
-import { Button } from 'antd';
+import { Button, Modal } from 'antd';
 import ResumeToPrint from './LayoutTemplates/ResumeToPrint';
 import { useReactToPrint } from 'react-to-print';
 
@@ -11,6 +11,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [resumes, setResumes] = useState([]);
   const [printResumeData, setPrintResumeData] = useState();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [resumeToDelete, setResumeToDelete] = useState(null);
 
   const resumeRef = useRef();
 
@@ -54,15 +56,16 @@ const Dashboard = () => {
   });
   
 
-  const handleDelete = async (resumeId) => {
+  const handleDelete = async () => {
     try {
-      await axiosInstance.delete(`/api/resume/${resumeId}`);
+      await axiosInstance.delete(`/api/resume/${resumeToDelete}`);
       // Optionally, update local state or refetch resumes
-      fetchResumes(); // Example: refetch resumes after deletion
+      fetchResumes(); // Refetch resumes after deletion
     } catch (error) {
       console.error('Error deleting resume:', error);
       // Handle error
     }
+    setModalVisible(false);
   };
 
   const handleEdit = async (resumeId) => {
@@ -97,7 +100,10 @@ const Dashboard = () => {
               <div className="flex items-center space-x-4">
               <Button type="primary" onClick={() => handleEdit(resume._id)}>Edit</Button>
                 <Button type="primary" onClick={() => handleDownload(resume._id)}>Download</Button>
-                <Button type="danger" onClick={() => handleDelete(resume._id)}>Delete</Button>
+                <Button type="danger" onClick={() => {
+                  setResumeToDelete(resume._id)
+                  setModalVisible(true)
+                  }}>Delete</Button>
               </div>
             </li>
           ))}
@@ -106,6 +112,14 @@ const Dashboard = () => {
       <div className='hidden'>
       <ResumeToPrint ref={resumeRef} resumeData={printResumeData} />
       </div>
+      <Modal
+        title="Delete Resume"
+        visible={modalVisible}
+        onOk={handleDelete}
+        onCancel={()=>setModalVisible(false)}
+      >
+       <h2>Resume Once Deleted will not be recovered. Do you still want to delete it?</h2>
+      </Modal>
       </div>
   );
 };

@@ -148,7 +148,10 @@ const CreateResume = () => {
             </div>
           )}
           {step === 4 ? (
-            <Button type="primary" onClick={() => setModalVisible(true)} className="w-32">
+            <Button type="primary" onClick={() => {
+              !isEditMode ?
+              setModalVisible(true) : handleSubmit();
+              }} className="w-32">
               Submit
             </Button>
           ) : (
